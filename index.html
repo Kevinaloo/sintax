@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SinTax — Confess. Pay. Be Forgiven.</title>
+<meta name="description" content="The world's first guilt-powered charity. Confess anonymously, get judged by AI, pay your guilt, fund the good."/>
+<style>
+:root{
+  --red:#c0392b;--red2:#e74c3c;
+  --bg:#07070a;--surface:#0f0f16;--surface2:#15151f;
+  --border:#1e1e2e;--border2:#2e2e42;
+  --text:#f0f0f5;--text2:#9090a8;--text3:#4a4a62;
+  --display:'Georgia',serif;
+  --sans:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:'Courier New',Courier,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;min-height:100vh;}
+*{scrollbar-width:thin;scrollbar-color:var(--border2) var(--bg);}
+::selection{background:rgba(192,57,43,.35);color:#fff;}
+input,textarea,button{font-family:var(--sans);}
+textarea::placeholder,input::placeholder{color:var(--text3);}
+button{cursor:pointer;}
+a{color:var(--red);text-decoration:none;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes glow{0%,100%{box-shadow:0 0 24px rgba(192,57,43,.35);}50%{box-shadow:0 0 56px rgba(192,57,43,.6),0 0 100px rgba(192,57,43,.18);}}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes ember{0%{transform:translateY(0) scale(1);opacity:.75;}100%{transform:translateY(-110vh) scale(.2);opacity:0;}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.93);}to{opacity:1;transform:scale(1);}}
+@keyframes barFill{from{width:0%;}to{width:var(--target-width);}}
+@keyframes shake{0%,100%{transform:translateX(0);}15%{transform:translateX(-7px);}30%{transform:translateX(7px);}45%{transform:translateX(-5px);}60%{transform:translateX(5px);}75%{transform:translateX(-3px);}90%{transform:translateX(3px);}}
+@keyframes scoreJolt{0%{transform:scale(1);}40%{transform:scale(1.35);}70%{transform:scale(.95);}100%{transform:scale(1);}}
+@keyframes redFlash{0%,100%{background:var(--surface);}50%{background:rgba(192,57,43,.15);}}
+
+.fade-up{animation:fadeUp .7s ease both;}
+.scale-in{animation:scaleIn .4s ease both;}
+
+nav{
+  position:sticky;top:0;z-index:500;
+  background:rgba(7,7,10,.93);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  height:64px;display:flex;align-items:center;
+  padding:0 24px;justify-content:space-between;gap:12px;
+}
+.nav-logo{display:flex;align-items:baseline;gap:3px;cursor:pointer;flex-shrink:0;}
+.nav-logo .sin{font-family:var(--display);font-style:italic;font-weight:700;font-size:26px;color:#fff;text-shadow:0 0 30px rgba(192,57,43,.7);line-height:1;}
+.nav-logo .tax{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--red);letter-spacing:6px;padding-bottom:1px;}
+.nav-links{display:flex;gap:2px;flex-wrap:wrap;}
+.nav-btn{padding:10px 15px;background:transparent;color:var(--text2);border:none;font-size:11px;letter-spacing:2px;font-weight:700;text-transform:uppercase;transition:all .2s;border-radius:2px;}
+.nav-btn:hover,.nav-btn.active{background:var(--red);color:#fff;}
+.nav-donate{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--red);background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);padding:9px 16px;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.nav-donate:hover{background:var(--red);color:#fff;}
+
+.tab{display:none;animation:fadeUp .5s ease;}
+.tab.active{display:block;}
+
+.hero{position:relative;min-height:94vh;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:40px 24px;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 65%,rgba(192,57,43,.14) 0%,transparent 72%);pointer-events:none;}
+.hero-content{text-align:center;z-index:1;max-width:780px;width:100%;}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:6px;color:var(--red);margin-bottom:28px;opacity:.9;}
+.hero-sin{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(72px,14vw,148px);line-height:.88;color:#fff;letter-spacing:-3px;text-shadow:0 0 80px rgba(192,57,43,.38);display:block;}
+.hero-tax{font-family:var(--mono);font-weight:700;font-size:clamp(22px,5.5vw,58px);letter-spacing:clamp(8px,2vw,22px);color:var(--red);line-height:1;margin-bottom:36px;text-shadow:0 0 50px rgba(192,57,43,.5);}
+.hero-sub{font-family:var(--display);font-style:italic;font-size:clamp(15px,2.2vw,21px);font-weight:300;color:var(--text2);line-height:1.75;margin:0 auto 48px;max-width:460px;}
+.hero-ctas{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.hero-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{font-weight:700;font-size:10px;letter-spacing:4px;background:var(--red);color:#fff;border:none;padding:17px 40px;transition:all .25s;animation:glow 3s ease infinite;text-transform:uppercase;}
+.btn-primary:hover{background:var(--red2);transform:translateY(-1px);}
+.btn-secondary{font-weight:600;font-size:10px;letter-spacing:4px;background:transparent;color:var(--text2);border:1px solid var(--border2);padding:17px 40px;transition:all .25s;text-transform:uppercase;}
+.btn-secondary:hover{border-color:var(--red);color:var(--red);}
+.btn-ghost{font-family:var(--mono);font-size:9px;letter-spacing:4px;background:transparent;color:var(--text3);border:1px solid var(--border);padding:10px 26px;transition:all .25s;text-transform:uppercase;}
+.btn-ghost:hover{border-color:rgba(192,57,43,.4);color:var(--red);}
+
+.stats-strip{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:60px;flex-wrap:wrap;}
+.stat-item{flex:1;min-width:130px;padding:24px 20px;text-align:center;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-value{font-family:var(--display);font-style:italic;font-weight:700;font-size:34px;color:var(--red);line-height:1;margin-bottom:6px;letter-spacing:-1px;}
+.stat-label{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);text-transform:uppercase;}
+
+.ember{position:fixed;pointer-events:none;z-index:9990;border-radius:50%;animation:ember linear forwards;}
+
+.section-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:6px;color:var(--red);margin-bottom:16px;text-transform:uppercase;opacity:.9;}
+.section-title{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(36px,6vw,54px);color:#fff;line-height:1;margin-bottom:12px;letter-spacing:-1px;}
+.section-sub{font-family:var(--sans);font-size:13px;color:var(--text3);line-height:1.7;max-width:500px;margin:0 auto;}
+.section-header{text-align:center;margin-bottom:56px;}
+
+.confess-section{max-width:720px;margin:0 auto;padding:80px 24px;}
+.step-label{font-family:var(--mono);font-size:9px;letter-spacing:6px;color:var(--red);margin-bottom:18px;}
+.confess-textarea{width:100%;min-height:160px;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;font-family:var(--display);font-style:italic;font-weight:400;padding:28px;resize:vertical;line-height:1.85;letter-spacing:.15px;}
+.confess-box{border:1px solid var(--border);background:var(--surface);transition:border-color .3s;}
+.confess-box:focus-within{border-color:rgba(192,57,43,.45);}
+.confess-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.char-count{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;}
+
+.result-card{margin-top:28px;border:1px solid var(--border);background:var(--surface);overflow:hidden;animation:scaleIn .4s ease;}
+.result-header{background:linear-gradient(135deg,#0c0005,#180008);padding:28px 32px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.result-meta{font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:10px;}
+.result-category{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--red);background:rgba(192,57,43,.12);padding:4px 12px;display:inline-block;text-transform:uppercase;}
+.result-score-label{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);margin-bottom:6px;text-align:right;}
+.result-score{font-family:var(--display);font-style:italic;font-weight:700;font-size:60px;line-height:1;letter-spacing:-2px;text-align:right;}
+.score-bar-track{height:3px;background:var(--surface2);}
+.score-bar-fill{height:100%;background:linear-gradient(to right,#f1c40f,#f39c12,#e74c3c);transition:width 1.2s cubic-bezier(.22,.61,.36,1);width:0%;}
+.result-body{padding:28px 32px;}
+.verdict-quote{font-family:var(--display);font-style:italic;font-size:17px;color:var(--text);line-height:1.85;margin-bottom:24px;border-left:3px solid var(--red);padding-left:20px;transition:opacity .15s;}
+.judgment-box{background:var(--surface2);border:1px solid var(--border);padding:16px 22px;margin-bottom:24px;text-align:center;}
+.judgment-label{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);margin-bottom:8px;}
+.judgment-text{font-family:var(--display);font-style:italic;color:var(--text2);font-size:14px;line-height:1.6;}
+.verdict-choice{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:24px;}
+.btn-sorry{font-weight:700;font-size:10px;letter-spacing:3px;background:rgba(39,174,96,.1);color:#2ecc71;border:1px solid rgba(39,174,96,.35);padding:18px 16px;transition:all .25s;text-transform:uppercase;text-align:center;line-height:1.4;}
+.btn-sorry:hover{background:rgba(39,174,96,.2);border-color:#2ecc71;transform:translateY(-1px);}
+.btn-condemned{font-weight:700;font-size:10px;letter-spacing:3px;background:rgba(192,57,43,.08);color:var(--red);border:1px solid rgba(192,57,43,.3);padding:18px 16px;transition:all .25s;text-transform:uppercase;text-align:center;line-height:1.4;}
+.btn-condemned:hover{background:rgba(192,57,43,.16);border-color:var(--red);transform:translateY(-1px);}
+
+.outcome-box{padding:28px 32px;text-align:center;animation:scaleIn .45s ease;border-top:1px solid var(--border);}
+.outcome-icon{font-size:42px;margin-bottom:14px;display:block;}
+.outcome-title{font-family:var(--display);font-style:italic;font-weight:700;font-size:32px;line-height:1;margin-bottom:10px;letter-spacing:-1px;}
+.outcome-sub{font-family:var(--sans);font-size:13px;color:var(--text3);line-height:1.7;max-width:400px;margin:0 auto 28px;}
+
+.donation-panel{margin-top:0;border-top:1px solid var(--border);padding:28px 32px;animation:fadeUp .4s ease;}
+.donation-label{font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:6px;}
+.donation-ksh{font-family:var(--display);font-style:italic;font-weight:700;font-size:50px;color:var(--red);line-height:1;letter-spacing:-2px;margin-bottom:4px;transition:color .2s;}
+.donation-usd{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:22px;letter-spacing:2px;}
+.donation-options{display:flex;flex-direction:column;gap:10px;}
+.donation-own-row{display:flex;gap:10px;}
+.donation-phone-row{display:flex;gap:10px;margin-top:4px;}
+.donation-own-input{flex:1;background:var(--surface2);border:1px solid var(--border);outline:none;color:var(--text);font-size:15px;font-family:var(--display);font-style:italic;padding:13px 16px;transition:border-color .2s;min-width:0;}
+.donation-own-input:focus{border-color:rgba(192,57,43,.45);}
+.donation-own-input::placeholder{color:var(--text3);font-size:13px;}
+.phone-input{flex:1;background:var(--surface2);border:1px solid var(--border);outline:none;color:var(--text);font-size:15px;font-family:var(--mono);padding:13px 16px;transition:border-color .2s;min-width:0;}
+.phone-input:focus{border-color:rgba(192,57,43,.45);}
+.phone-input::placeholder{color:var(--text3);font-size:12px;}
+.btn-donate-own{font-weight:700;font-size:9px;letter-spacing:3px;background:var(--red);color:#fff;border:none;padding:13px 22px;transition:all .25s;text-transform:uppercase;flex-shrink:0;}
+.btn-donate-own:hover{background:var(--red2);}
+.btn-post-free{font-family:var(--mono);font-size:9px;letter-spacing:2px;background:transparent;color:var(--text3);border:1px solid var(--border);padding:12px 22px;transition:all .25s;width:100%;text-transform:uppercase;}
+.btn-post-free:hover{border-color:var(--border2);color:var(--text2);}
+
+.bill-box{display:none;}
+.bill-label{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);margin-bottom:8px;}
+.bill-amount{font-family:var(--display);font-style:italic;font-weight:700;font-size:44px;color:var(--red);line-height:1;letter-spacing:-1px;transition:color .2s;}
+.bill-btns{display:flex;flex-direction:column;gap:8px;}
+.btn-pay{font-weight:700;font-size:9px;letter-spacing:4px;background:var(--red);color:#fff;border:none;padding:13px 26px;transition:all .25s;text-transform:uppercase;box-shadow:0 0 28px rgba(192,57,43,.3);}
+.btn-pay:hover{background:var(--red2);}
+.btn-deny{font-family:var(--mono);font-size:9px;letter-spacing:2px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:9px 26px;transition:all .25s;text-transform:uppercase;}
+.btn-deny:hover{border-color:var(--red);color:var(--red);background:rgba(192,57,43,.08);}
+.btn-deny:disabled{opacity:.45;cursor:not-allowed;border-color:var(--red);color:var(--red);}
+
+.loading-box{margin-top:24px;padding:28px;border:1px solid var(--border);background:var(--surface);text-align:center;animation:fadeIn .3s ease;}
+.spinner{font-size:24px;animation:spin 1.2s linear infinite;display:inline-block;margin-bottom:10px;}
+.loading-text{font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--text3);}
+
+.mpesa-status{margin-top:12px;padding:14px 18px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.06);font-family:var(--mono);font-size:9px;letter-spacing:3px;color:#2ecc71;text-align:center;animation:fadeIn .4s ease;}
+.mpesa-error{border-color:rgba(192,57,43,.3);background:rgba(192,57,43,.06);color:var(--red);}
+
+.feed-section{max-width:740px;margin:0 auto;padding:72px 24px;}
+.cat-filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:8px;letter-spacing:3px;padding:7px 14px;cursor:pointer;transition:all .2s;}
+.cat-filter-btn:hover{border-color:var(--red);color:var(--text);}
+.cat-filter-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
+.feed-list{display:flex;flex-direction:column;gap:2px;}
+.feed-item{background:var(--surface);border:1px solid var(--border);transition:border-color .25s;}
+.feed-item:hover{border-color:var(--border2);}
+.feed-item-body{padding:26px 28px;}
+.feed-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;}
+.feed-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.tag{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--red);background:rgba(192,57,43,.1);padding:4px 10px;text-transform:uppercase;white-space:nowrap;}
+.feed-time{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:2px;}
+.feed-score{font-family:var(--display);font-style:italic;font-weight:700;font-size:22px;line-height:1;flex-shrink:0;}
+.feed-text{font-family:var(--display);font-style:italic;font-size:16px;color:var(--text2);line-height:1.82;margin-bottom:20px;letter-spacing:.1px;}
+.feed-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.action-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.action-btn{font-family:var(--mono);font-size:9px;letter-spacing:1px;background:transparent;border:1px solid var(--border);color:var(--text3);padding:7px 12px;transition:all .2s;white-space:nowrap;}
+.action-btn:hover,.action-btn.active{border-color:var(--red);color:var(--red);}
+.paid-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;}
+
+.comments-panel{border-top:1px solid var(--border);background:var(--surface2);display:none;}
+.comments-panel.open{display:block;animation:fadeIn .3s ease;}
+.comment-list{padding:18px 28px 0;}
+.comment-row{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.comment-avatar{width:28px;height:28px;border-radius:50%;background:rgba(192,57,43,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.comment-meta{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);margin-bottom:4px;}
+.comment-text{font-family:var(--sans);font-size:13px;color:var(--text2);line-height:1.65;}
+.comment-input-row{padding:14px 28px 18px;display:flex;gap:10px;align-items:flex-end;}
+.comment-textarea{flex:1;background:var(--surface);border:1px solid var(--border);outline:none;color:var(--text2);font-size:13px;padding:11px 14px;resize:none;line-height:1.55;min-height:50px;transition:border-color .2s;}
+.comment-textarea:focus{border-color:rgba(192,57,43,.4);}
+.btn-post{font-weight:700;font-size:9px;letter-spacing:3px;background:var(--red);color:#fff;border:none;padding:0 18px;height:50px;transition:all .2s;text-transform:uppercase;flex-shrink:0;}
+.btn-post:hover{background:var(--red2);}
+
+.ranks-section{max-width:920px;margin:0 auto;padding:72px 24px;}
+.board-header{display:grid;grid-template-columns:1fr 80px 110px;gap:0 16px;padding:0 20px 14px;border-bottom:1px solid var(--border);}
+.board-head{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);text-align:right;}
+.board-head:first-child{text-align:left;}
+.board-row{display:grid;grid-template-columns:1fr 80px 110px;gap:0 16px;padding:18px 20px;border-bottom:1px solid var(--surface2);align-items:center;transition:background .2s;}
+.board-row:hover{background:var(--surface);}
+.board-country{display:flex;align-items:center;gap:14px;}
+.board-rank{font-family:var(--display);font-style:italic;font-weight:700;font-size:19px;color:var(--border2);width:30px;line-height:1;}
+.board-rank.top{color:var(--red);}
+.board-flag{font-size:20px;}
+.board-name{font-family:var(--sans);font-weight:500;font-size:14px;color:var(--text2);}
+.board-sins{font-family:var(--mono);font-size:12px;color:var(--text3);text-align:right;}
+.board-amt{font-family:var(--display);font-style:italic;font-weight:700;font-size:20px;color:var(--red);text-align:right;letter-spacing:-.5px;}
+.cats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:40px;}
+@media(max-width:600px){.cats-grid{grid-template-columns:repeat(2,1fr);}}
+.cat-card{background:var(--surface);border:1px solid var(--border);padding:24px 20px;transition:border-color .2s;}
+.cat-card:hover{border-color:var(--border2);}
+.cat-emoji{font-size:22px;margin-bottom:10px;}
+.cat-name{font-family:var(--sans);font-weight:500;font-size:12px;color:var(--text2);margin-bottom:10px;}
+.cat-bar-track{height:2px;background:var(--surface2);margin-bottom:8px;}
+.cat-bar-fill{height:100%;background:var(--red);}
+.cat-pct{font-family:var(--display);font-style:italic;font-weight:700;font-size:26px;color:var(--red);letter-spacing:-.5px;}
+
+.charity-section{max-width:740px;margin:0 auto;padding:72px 24px;}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:52px;}
+@media(max-width:600px){.steps-grid{grid-template-columns:1fr;}}
+.step-card{background:var(--surface);border:1px solid var(--border);padding:28px 22px;}
+.step-num{font-family:var(--display);font-style:italic;font-weight:700;font-size:38px;color:var(--border2);margin-bottom:14px;line-height:1;}
+.step-title{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--red);margin-bottom:10px;}
+.step-body{font-family:var(--sans);font-size:12px;color:var(--text3);line-height:1.75;}
+.causes-wrap{margin-bottom:48px;}
+.causes-label{font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:16px;}
+.causes-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.cause-tag{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text3);border:1px solid var(--border);padding:6px 14px;transition:all .2s;cursor:default;}
+.cause-tag:hover{border-color:rgba(192,57,43,.4);color:var(--red);}
+.form-box{border:1px solid var(--border);background:var(--surface);}
+.form-header{padding:18px 28px;border-bottom:1px solid var(--border);}
+.form-header-label{font-family:var(--mono);font-size:9px;letter-spacing:6px;color:var(--red);}
+.form-body{padding:28px;display:flex;flex-direction:column;gap:20px;}
+.field-label{font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;}
+.field-req{color:var(--red);}
+.field-input{width:100%;background:var(--surface2);border:1px solid var(--border);outline:none;color:var(--text);font-size:14px;padding:13px 16px;transition:border-color .2s;box-sizing:border-box;}
+.field-input:focus{border-color:rgba(192,57,43,.45);}
+.field-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);outline:none;color:var(--text);font-size:14px;padding:13px 16px;resize:vertical;min-height:96px;line-height:1.7;transition:border-color .2s;box-sizing:border-box;}
+.field-textarea:focus{border-color:rgba(192,57,43,.45);}
+.form-submit-row{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;gap:14px;}
+.form-note{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);}
+.success-box{border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.05);padding:48px 32px;text-align:center;animation:scaleIn .4s ease;}
+.success-icon{font-size:36px;margin-bottom:16px;}
+.success-title{font-family:var(--display);font-style:italic;font-weight:700;font-size:32px;color:#fff;margin-bottom:12px;letter-spacing:-1px;}
+.success-body{font-family:var(--sans);font-size:13px;color:var(--text3);line-height:1.8;max-width:380px;margin:0 auto 28px;}
+.prev-funded{margin-top:52px;}
+.prev-label{font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:18px;}
+.prev-list{display:flex;flex-direction:column;gap:2px;}
+.prev-item{background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;transition:border-color .2s;}
+.prev-item:hover{border-color:var(--border2);}
+.prev-name{font-family:var(--sans);font-weight:500;font-size:13px;color:var(--text2);margin-bottom:8px;}
+.prev-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.prev-country{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.prev-received-label{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);margin-bottom:6px;text-align:right;}
+.prev-amount{font-family:var(--display);font-style:italic;font-weight:700;font-size:22px;color:var(--red);text-align:right;letter-spacing:-.5px;}
+
+.creators-section{max-width:920px;margin:0 auto;padding:72px 24px;}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:60px;}
+@media(max-width:700px){.how-grid{grid-template-columns:repeat(2,1fr);}}
+.how-card{background:var(--surface);border:1px solid var(--border);padding:26px 20px;transition:border-color .25s,transform .25s;}
+.how-card:hover{border-color:var(--red);transform:translateY(-4px);}
+.tiers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:56px;}
+@media(max-width:600px){.tiers-grid{grid-template-columns:1fr;}}
+.tier-card{background:var(--surface);border:1px solid var(--border);padding:28px 24px;transition:all .25s;position:relative;overflow:hidden;}
+.tier-card:hover{border-color:var(--red);transform:translateY(-3px);}
+.tier-card.featured{border-color:var(--red);}
+.tier-popular{position:absolute;top:0;right:0;font-family:var(--mono);font-size:7px;letter-spacing:3px;background:var(--red);color:#fff;padding:4px 12px;}
+.tier-reach{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);margin-bottom:10px;}
+.tier-name{font-family:var(--display);font-style:italic;font-weight:700;font-size:20px;color:#fff;margin-bottom:8px;line-height:1;}
+.tier-pct{font-family:var(--display);font-style:italic;font-weight:700;font-size:44px;color:var(--red);line-height:1;margin-bottom:6px;letter-spacing:-1px;}
+.tier-share{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);margin-bottom:16px;}
+.tier-divider{height:1px;background:var(--border);margin-bottom:16px;}
+.tier-perk{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px;}
+.tier-perk-check{color:var(--red);font-size:10px;flex-shrink:0;margin-top:2px;}
+.tier-perk-text{font-family:var(--sans);font-size:11px;color:var(--text2);line-height:1.5;}
+.earners-table{border:1px solid var(--border);background:var(--surface);margin-bottom:52px;}
+.earners-header{display:grid;grid-template-columns:1fr 90px 90px 120px;gap:0 12px;padding:14px 24px;border-bottom:1px solid var(--border);}
+.earners-row{display:grid;grid-template-columns:1fr 90px 90px 120px;gap:0 12px;padding:16px 24px;border-bottom:1px solid var(--surface2);align-items:center;transition:background .2s;}
+.earners-row:last-child{border-bottom:none;}
+.earners-row:hover{background:var(--surface2);}
+.earner-name{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--text);}
+.earner-cell{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;}
+.earner-earned{font-family:var(--display);font-style:italic;font-weight:700;font-size:18px;color:var(--red);text-align:right;letter-spacing:-.3px;}
+.earner-tier{display:inline-block;font-family:var(--mono);font-size:7px;letter-spacing:2px;padding:3px 8px;margin-bottom:3px;}
+
+.about-section{max-width:740px;margin:0 auto;padding:72px 24px;}
+.gospel-item{padding:40px 0;border-bottom:1px solid var(--surface2);display:grid;grid-template-columns:68px 1fr;gap:32px;align-items:start;}
+.gospel-num{font-family:var(--display);font-style:italic;font-weight:700;font-size:38px;color:var(--border2);line-height:1;}
+.gospel-title{font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:4px;color:var(--text);margin-bottom:12px;text-transform:uppercase;}
+.gospel-body{font-family:var(--sans);font-size:14px;color:var(--text3);line-height:1.9;}
+.quote-box{margin-top:56px;background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.16);padding:44px 36px;text-align:center;}
+.quote-eyebrow{font-family:var(--mono);font-size:8px;letter-spacing:6px;color:var(--red);margin-bottom:16px;}
+.quote-text{font-family:var(--display);font-style:italic;font-weight:400;font-size:17px;color:var(--text2);line-height:1.85;}
+
+footer{border-top:1px solid var(--border);padding:32px 32px;margin-top:90px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+.footer-logo{display:flex;align-items:baseline;gap:2px;}
+.footer-sin{font-family:var(--display);font-style:italic;font-weight:700;font-size:18px;color:var(--border2);}
+.footer-tax{font-family:var(--mono);font-size:10px;color:#2a0000;letter-spacing:4px;}
+.footer-copy{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);}
+.footer-tag{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--red);}
+
+#devil-container{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.devil-wrap{position:absolute;bottom:-180px;transform-origin:bottom center;}
+
+@media(max-width:480px){
+  nav{padding:0 14px;}
+  .nav-btn{padding:8px 10px;font-size:9px;letter-spacing:1px;}
+  .nav-donate{display:none;}
+  .board-header,.board-row{grid-template-columns:1fr 70px;}
+  .board-row>:nth-child(2){display:none;}
+  .board-head:nth-child(2){display:none;}
+  .earners-header,.earners-row{grid-template-columns:1fr 90px;}
+  .earners-header>*:nth-child(2),.earners-header>*:nth-child(3),
+  .earners-row>*:nth-child(2),.earners-row>*:nth-child(3){display:none;}
+  .how-grid{grid-template-columns:1fr 1fr;}
+  .tiers-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showTab('confess')">
+    <span class="sin">Sin</span><span class="tax">TAX</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showTab('confess')" id="tab-btn-confess">CONFESS</button>
+    <button class="nav-btn" onclick="showTab('feed')" id="tab-btn-feed">FEED</button>
+    <button class="nav-btn" onclick="showTab('leaderboard')" id="tab-btn-leaderboard">RANKS</button>
+    <button class="nav-btn" onclick="showTab('charity')" id="tab-btn-charity">CHARITY</button>
+    <button class="nav-btn" onclick="showTab('creators')" id="tab-btn-creators">CREATORS</button>
+    <button class="nav-btn" onclick="showTab('about')" id="tab-btn-about">ABOUT</button>
+  </div>
+  <button class="nav-donate">😈 DONATE NOW</button>
+</nav>
+
+<div id="devil-container"></div>
+
+<!-- CONFESS TAB -->
+<div class="tab active" id="tab-confess">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div id="hero-embers"></div>
+    <div class="hero-content fade-up">
+      <p class="hero-eyebrow">THE WORLD'S FIRST GUILT-POWERED CHARITY</p>
+      <span class="hero-sin">Sin</span>
+      <div class="hero-tax">TAX</div>
+      <p class="hero-sub">Confess your sins. Pay your guilt.<br>Fund something good for once.</p>
+      <div class="hero-ctas">
+        <div class="hero-row">
+          <button class="btn-primary" onclick="confessNow()">CONFESS NOW</button>
+          <button class="btn-secondary" onclick="readConf()">READ CONFESSIONS</button>
+        </div>
+        <button class="btn-ghost" onclick="showTab('charity')">🤝 APPLY FOR CHARITY SUPPORT</button>
+      </div>
+      <div class="stats-strip">
+        <div class="stat-item"><div class="stat-value">47,291</div><div class="stat-label">Sins Confessed</div></div>
+        <div class="stat-item"><div class="stat-value">$284K</div><div class="stat-label">Guilt Donated</div></div>
+        <div class="stat-item"><div class="stat-value">139</div><div class="stat-label">Countries</div></div>
+        <div class="stat-item"><div class="stat-value">666</div><div class="stat-label">Hoodie Units</div></div>
+      </div>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;"></div>
+  </section>
+
+  <section class="confess-section" id="cbox">
+    <div style="text-align:center;margin-bottom:48px;">
+      <p class="step-label">STEP 01 — CONFESSION</p>
+      <h2 style="font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(34px,6vw,50px);color:#fff;margin-bottom:12px;line-height:1;letter-spacing:-1px;">What did you do?</h2>
+      <p style="font-family:var(--sans);font-size:13px;color:var(--text3);">Anonymous. Judged by AI. Funded for good.</p>
+    </div>
+    <div class="confess-box">
+      <textarea class="confess-textarea" id="conf-input" placeholder="I have sinned. Last Tuesday I..." oninput="updateCharCount()"></textarea>
+      <div class="confess-footer">
+        <span class="char-count" id="char-count">0 CHARS · ANONYMOUS · ENCRYPTED</span>
+        <button class="btn-primary" id="confess-btn" onclick="submitConfession()" style="padding:11px 26px;font-size:9px;animation:none;" disabled>CONFESS & PAY</button>
+      </div>
+    </div>
+    <div id="result-area"></div>
+  </section>
+</div>
+
+<!-- FEED TAB -->
+<div class="tab" id="tab-feed">
+  <section class="feed-section">
+    <div class="section-header">
+      <p class="section-eyebrow">COMMUNITY CONFESSIONS</p>
+      <h2 class="section-title">The Sin Feed</h2>
+      <p class="section-sub">Anonymous. Real. Disturbingly relatable.</p>
+    </div>
+    <!-- Category filter tabs -->
+    <div id="feed-filter-bar" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
+      <button class="cat-filter-btn active" onclick="setFeedFilter('All')" id="cat-All">ALL</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Betrayal')" id="cat-Betrayal">🗡️ BETRAYAL</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Greed')" id="cat-Greed">💰 GREED</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Lust')" id="cat-Lust">🔥 LUST</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Envy')" id="cat-Envy">😒 ENVY</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Wrath')" id="cat-Wrath">😡 WRATH</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Sloth')" id="cat-Sloth">🛋️ SLOTH</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Gluttony')" id="cat-Gluttony">🍔 GLUTTONY</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Cowardice')" id="cat-Cowardice">😰 COWARDICE</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Pettiness')" id="cat-Pettiness">🙄 PETTINESS</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Chaos')" id="cat-Chaos">🌀 CHAOS</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Deception')" id="cat-Deception">🎭 DECEPTION</button>
+      <button class="cat-filter-btn" onclick="setFeedFilter('Selfishness')" id="cat-Selfishness">💅 SELFISHNESS</button>
+    </div>
+    <!-- Creator filter banner (shown when ?ref= is in URL) -->
+    <div id="creator-filter-banner" style="display:none;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.3);padding:14px 18px;margin-bottom:20px;font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--red);">
+      VIEWING CONFESSIONS FROM <span id="creator-filter-name"></span> · <button onclick="clearCreatorFilter()" style="background:none;border:none;color:var(--text3);font-family:var(--mono);font-size:10px;letter-spacing:2px;cursor:pointer;text-decoration:underline;">CLEAR FILTER</button>
+    </div>
+    <div class="feed-list" id="feed-list"><div class="loading-box" style="padding:40px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--text3);">LOADING CONFESSIONS...</div></div>
+    <div style="text-align:center;margin-top:44px;">
+      <button class="btn-primary" onclick="showTab('confess');setTimeout(()=>document.getElementById('cbox').scrollIntoView({behavior:'smooth'}),120)">ADD YOUR CONFESSION</button>
+    </div>
+  </section>
+</div>
+
+<!-- LEADERBOARD TAB -->
+<div class="tab" id="tab-leaderboard">
+  <section class="ranks-section">
+    <div class="section-header">
+      <p class="section-eyebrow">GLOBAL SIN RANKINGS</p>
+      <h2 class="section-title">Who's Sinning Most?</h2>
+    </div>
+    <div style="margin-bottom:56px;">
+      <div class="board-header">
+        <span class="board-head" style="text-align:left;">COUNTRY</span>
+        <span class="board-head">SINS</span>
+        <span class="board-head">DONATED</span>
+      </div>
+      <div id="board-list"></div>
+    </div>
+    <p style="font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:20px;">TOP SIN CATEGORIES THIS WEEK</p>
+    <div class="cats-grid" id="cats-grid"></div>
+  </section>
+</div>
+
+<!-- CHARITY TAB -->
+<div class="tab" id="tab-charity">
+  <section class="charity-section">
+    <div class="section-header">
+      <p class="section-eyebrow">FUNDED BY GUILT · DOING ACTUAL GOOD</p>
+      <h2 class="section-title">Apply for Support</h2>
+      <p class="section-sub">Every confession. Every donation. Every sin paid for — goes here. If your organisation does real work, we want to fund it.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">01</div><div class="step-title">APPLY</div><p class="step-body">Fill out the form and tell us what you do and why the world needs it.</p></div>
+      <div class="step-card"><div class="step-num">02</div><div class="step-title">REVIEW</div><p class="step-body">We review applications monthly, prioritising grassroots community-led organisations.</p></div>
+      <div class="step-card"><div class="step-num">03</div><div class="step-title">FUNDED</div><p class="step-body">Selected charities receive a grant from our guilt pool. No strings attached.</p></div>
+    </div>
+    <div class="causes-wrap">
+      <p class="causes-label">CAUSES WE FUND</p>
+      <div class="causes-tags">
+        <span class="cause-tag">Mental Health</span><span class="cause-tag">Food Security</span><span class="cause-tag">Conflict Resolution</span>
+        <span class="cause-tag">Education</span><span class="cause-tag">Refugee Support</span><span class="cause-tag">Women Empowerment</span>
+        <span class="cause-tag">Youth Programs</span><span class="cause-tag">Environmental Justice</span><span class="cause-tag">Homeless Outreach</span>
+        <span class="cause-tag">Grief &amp; Trauma</span>
+      </div>
+    </div>
+    <div id="charity-form-area"></div>
+    <div class="prev-funded">
+      <p class="prev-label">PREVIOUSLY FUNDED</p>
+      <div class="prev-list">
+        <div class="prev-item"><div><div class="prev-name">Kibera Youth Mental Health Collective</div><div class="prev-meta"><span class="prev-country">🇰🇪 Kenya</span><span class="tag">Mental Health</span></div></div><div><div class="prev-received-label">RECEIVED</div><div class="prev-amount">$3,200</div></div></div>
+        <div class="prev-item"><div><div class="prev-name">Lagos Street Children Education Fund</div><div class="prev-meta"><span class="prev-country">🇳🇬 Nigeria</span><span class="tag">Education</span></div></div><div><div class="prev-received-label">RECEIVED</div><div class="prev-amount">$5,000</div></div></div>
+        <div class="prev-item"><div><div class="prev-name">Cape Town Food Rescue Network</div><div class="prev-meta"><span class="prev-country">🇿🇦 South Africa</span><span class="tag">Food Security</span></div></div><div><div class="prev-received-label">RECEIVED</div><div class="prev-amount">$2,800</div></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CREATORS TAB -->
+<div class="tab" id="tab-creators">
+  <section class="creators-section">
+    <div class="section-header">
+      <p class="section-eyebrow">EARN WHILE THE WORLD CONFESSES</p>
+      <h2 class="section-title">Creator Programme</h2>
+      <p class="section-sub">Build an audience around guilt, confession, and dark humour. Earn a revenue share on every donation your content drives.</p>
+    </div>
+    <!-- Self-serve creator link generator -->
+    <div style="background:var(--surface);border:1px solid var(--border);padding:32px;margin-bottom:40px;">
+      <p style="font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--red);margin-bottom:16px;">GENERATE YOUR LINK</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <input id="creator-handle-input" type="text" placeholder="Your name or handle e.g. @mwalimu" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:14px 16px;outline:none;width:100%;box-sizing:border-box;" oninput="this.value=this.value.replace(/^@/,'')"/>
+        <button onclick="generateCreatorLink()" style="background:var(--red);color:#fff;border:none;font-family:var(--mono);font-size:10px;letter-spacing:4px;padding:14px;cursor:pointer;font-weight:700;">GET MY LINK</button>
+      </div>
+      <div id="creator-link-result" style="display:none;margin-top:20px;padding:16px;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);">
+        <p style="font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text3);margin-bottom:8px;">YOUR UNIQUE LINK</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span id="creator-link-url" style="font-family:var(--mono);font-size:12px;color:var(--red);word-break:break-all;flex:1;"></span>
+          <button onclick="copyCreatorLink()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:8px 14px;cursor:pointer;flex-shrink:0;" id="copy-link-btn">COPY</button>
+        </div>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:12px;letter-spacing:2px;">Share this link. When people confess through it, their confessions appear in the general feed AND at sintaxcharity.netlify.app?ref=<span id="creator-ref-display"></span></p>
+        <p style="font-family:var(--mono);font-size:9px;color:#2ecc71;margin-top:8px;letter-spacing:2px;">YOU EARN 20% OF EVERY DONATION THROUGH YOUR LINK · PAID MONTHLY</p>
+        <button onclick="viewMyFeed()" style="margin-top:14px;background:none;border:1px solid var(--border);color:var(--text2);font-family:var(--mono);font-size:9px;letter-spacing:3px;padding:10px 18px;cursor:pointer;">VIEW MY FEED</button>
+      </div>
+      <div id="creator-link-error" style="display:none;margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:2px;"></div>
+    </div>
+    <div class="how-grid">
+      <div class="how-card"><div class="step-num">01</div><div class="step-title">Generate</div><p class="step-body">Enter your name above and get your unique tracking link instantly. No approval needed.</p></div>
+      <div class="how-card"><div class="step-num">02</div><div class="step-title">Create</div><p class="step-body">Post confessions, reactions, roasts. Your unique link tracks donations.</p></div>
+      <div class="how-card"><div class="step-num">03</div><div class="step-title">Earn</div><p class="step-body">Get 10–20% of every donation driven through your link. Paid monthly.</p></div>
+      <div class="how-card"><div class="step-num">04</div><div class="step-title">Grow</div><p class="step-body">Top creators get featured placements, exclusive campaigns and merch cuts.</p></div>
+    </div>
+    <p style="font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:20px;">EARNINGS TIERS</p>
+    <div class="tiers-grid">
+      <div class="tier-card"><div class="tier-reach">1K–10K FOLLOWERS</div><div class="tier-name">Bronze Sinner</div><div class="tier-pct">10%</div><div class="tier-share">REVENUE SHARE</div><div class="tier-divider"></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Unique tracking link</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Monthly payouts</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Creator badge</span></div></div>
+      <div class="tier-card"><div class="tier-reach">10K–100K FOLLOWERS</div><div class="tier-name">Silver Sinner</div><div class="tier-pct">15%</div><div class="tier-share">REVENUE SHARE</div><div class="tier-divider"></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Everything in Bronze</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Featured feed placement</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Early access to drops</span></div></div>
+      <div class="tier-card featured"><div class="tier-popular">POPULAR</div><div class="tier-reach">100K+ FOLLOWERS</div><div class="tier-name">Gold Sinner</div><div class="tier-pct">20%</div><div class="tier-share">REVENUE SHARE</div><div class="tier-divider"></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Everything in Silver</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Dedicated campaign collabs</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Co-branded merch cut</span></div><div class="tier-perk"><span class="tier-perk-check">✓</span><span class="tier-perk-text">Priority support</span></div></div>
+    </div>
+    <p style="font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:18px;">TOP EARNERS THIS MONTH</p>
+    <div class="earners-table">
+      <div class="earners-header">
+        <span style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);">CREATOR</span>
+        <span style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);text-align:right;">PLATFORM</span>
+        <span style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);text-align:right;">FOLLOWERS</span>
+        <span style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text3);text-align:right;">EARNED</span>
+      </div>
+      <div class="earners-row"><span class="earner-name">@dark.confessions</span><span class="earner-cell">TikTok</span><span class="earner-cell">420K</span><div style="text-align:right;"><span class="earner-tier" style="color:#f39c12;background:rgba(243,156,18,.1);">GOLD</span><div class="earner-earned">$3,240</div></div></div>
+      <div class="earners-row"><span class="earner-name">@sinnersanonymous</span><span class="earner-cell">Instagram</span><span class="earner-cell">210K</span><div style="text-align:right;"><span class="earner-tier" style="color:#f39c12;background:rgba(243,156,18,.1);">GOLD</span><div class="earner-earned">$2,105</div></div></div>
+      <div class="earners-row"><span class="earner-name">@guilttrip.pod</span><span class="earner-cell">Podcast</span><span class="earner-cell">88K</span><div style="text-align:right;"><span class="earner-tier" style="color:var(--text3);background:var(--surface2);">SILVER</span><div class="earner-earned">$1,890</div></div></div>
+    </div>
+    <div id="creator-form-area"></div>
+  </section>
+</div>
+
+<!-- ABOUT TAB -->
+<div class="tab" id="tab-about">
+  <section class="about-section">
+    <div class="section-header">
+      <p class="section-eyebrow">OUR ORIGIN STORY</p>
+      <h2 class="section-title">The Gospel of SinTax</h2>
+    </div>
+    <div class="gospel-item"><div class="gospel-num">I</div><div><div class="gospel-title">The Idea</div><p class="gospel-body">In 2024, a dormant NGO in Nairobi had a midnight revelation: guilt is the most underutilised currency in the world. Every day, billions of people do things they regret. What if that guilt could fund something good?</p></div></div>
+    <div class="gospel-item"><div class="gospel-num">II</div><div><div class="gospel-title">The Platform</div><p class="gospel-body">We built a place where anyone can confess anonymously, get judged by an AI with the energy of a sarcastic priest, and pay a donation that matches the weight of their sin. No absolution without action.</p></div></div>
+    <div class="gospel-item"><div class="gospel-num">III</div><div><div class="gospel-title">The Community</div><p class="gospel-body">The confession feed became a mirror. People discovered they weren't alone in their pettiness, their betrayals, their small daily crimes. Collective guilt became collective healing.</p></div></div>
+    <div class="gospel-item"><div class="gospel-num">IV</div><div><div class="gospel-title">The Mission</div><p class="gospel-body">100% of donations fund vetted charitable causes — mental health, conflict resolution, food security. We are a registered NGO. Your sins are doing actual good.</p></div></div>
+    <div class="quote-box">
+      <p class="quote-eyebrow">FOUNDED IN NAIROBI, SINNING GLOBALLY</p>
+      <blockquote class="quote-text">"We didn't set out to build a charity. We set out to build something honest about human nature — and accidentally created the most cathartic place on the internet."</blockquote>
+      <button class="btn-primary" onclick="showTab('confess')" style="margin-top:28px;animation:none;">CONFESS NOW</button>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-logo"><span class="footer-sin">Sin</span><span class="footer-tax">TAX</span></div>
+  <span class="footer-copy">© 2024 SINTAX NGO · ALL SINS RESERVED · NAIROBI, KENYA</span>
+  <span class="footer-tag">WEAR YOUR GUILT · FUND THE GOOD</span>
+</footer>
+
+<script>
+/* ══ DATA ══ */
+const FEED_DATA=[
+  {id:1,text:"I told my boss I was at a funeral. I was at a Taylor Swift concert.",category:"Cowardice",score:42,amount:25,votes:847,time:"2h ago"},
+  {id:2,text:"I've been charging my roommate for half the Netflix bill for 8 months. We share it with four others.",category:"Greed",score:61,amount:40,votes:1203,time:"4h ago"},
+  {id:3,text:"I accidentally liked my ex's photo from 2019 while stalking their profile. Then I pretended it was a mistake to restart the conversation.",category:"Lust",score:35,amount:20,votes:2891,time:"6h ago"},
+  {id:4,text:"I let my colleague take the blame for a project that failed. It was entirely my fault.",category:"Cowardice",score:78,amount:75,votes:654,time:"8h ago"},
+  {id:5,text:"I've been pretending to be vegetarian at dinner parties for two years. I eat meat every single day.",category:"Pettiness",score:28,amount:15,votes:3102,time:"12h ago"},
+  {id:6,text:"I told my family I donated to charity last Christmas. I spent the money on myself.",category:"Greed",score:82,amount:100,votes:441,time:"1d ago"},
+  {id:7,text:"I ghosted someone after they helped me move apartments. I still have their box of books.",category:"Betrayal",score:69,amount:55,votes:1788,time:"1d ago"},
+  {id:8,text:"I've been stealing my neighbour's WiFi for three years. Their password is literally password123.",category:"Greed",score:22,amount:10,votes:5621,time:"2d ago"},
+];
+const BOARD_DATA=[
+  {flag:"🇺🇸",name:"United States",amt:48200,sins:1204},
+  {flag:"🇬🇧",name:"United Kingdom",amt:31500,sins:892},
+  {flag:"🇳🇬",name:"Nigeria",amt:22800,sins:743},
+  {flag:"🇰🇪",name:"Kenya",amt:18900,sins:621},
+  {flag:"🇨🇦",name:"Canada",amt:15300,sins:489},
+];
+const CATS_DATA=[
+  {cat:"Greed",pct:28,e:"💰"},{cat:"Cowardice",pct:22,e:"😰"},{cat:"Betrayal",pct:18,e:"🗡️"},
+  {cat:"Lust",pct:14,e:"🔥"},{cat:"Pettiness",pct:11,e:"🙄"},{cat:"Sloth",pct:7,e:"🛋️"}
+];
+
+/* ══ STATE ══ */
+const votes={};
+const comments={};
+let charitySubmitted=false;
+let creatorSubmitted=false;
+let _notSorryCount=0;
+let _pendingConfession=null;
+
+/* ══ TAB SWITCHING ══ */
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(el){el.classList.remove('active');});
+  const tab=document.getElementById('tab-'+id);
+  if(tab)tab.classList.add('active');
+  const btn=document.getElementById('tab-btn-'+id);
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function scoreCol(s){return s>70?'#e74c3c':s>40?'#f39c12':'#f1c40f';}
+
+/* ══ HERO EMBERS ══ */
+(function(){
+  const wrap=document.getElementById('hero-embers');
+  for(let i=0;i<14;i++){
+    const d=document.createElement('div');
+    d.style.cssText='position:absolute;width:'+(i%3===0?3:2)+'px;height:'+(i%3===0?3:2)+'px;background:var(--red);border-radius:50%;left:'+(8+i*6.5)+'%;bottom:0;animation:ember '+(3.2+i*.35)+'s ease-in '+(i*.28)+'s infinite;opacity:.55;pointer-events:none;';
+    wrap.appendChild(d);
+  }
+})();
+
+/* ══ DEVIL ══ */
+function spawnDevil(xPos){
+  const container=document.getElementById('devil-container');
+  const wrap=document.createElement('div');
+  wrap.className='devil-wrap';
+  const x=xPos??window.innerWidth/2;
+  wrap.style.left=(x-52)+'px';
+  let progress=0;
+  const startTime=Date.now();
+  const DURATION=3600;
+
+  function getBodyColor(ch){return 'rgb('+Math.round(45+ch*205)+','+Math.round(ch*88)+',0)';}
+  function getHornColor(burn){return burn>.3?'hsl('+(30-burn*30)+',100%,'+(40+burn*30)+'%)':'#c0392b';}
+
+  function buildSVG(p){
+    const ease=1-Math.pow(1-p,2.4);
+    const burn=Math.max(0,Math.min(1,(p-.35)/.65));
+    const ch=Math.min(1,burn*2);
+    const dis=Math.max(0,(p-.76)/.24);
+    const fh=p<.4?p*175:dis>.4?(1-dis)*95:95;
+    const op=dis>.55?1-(dis-.55)/.45:1;
+    const scale=.45+ease*.7;
+    const bc=getBodyColor(ch);
+    const hc=getHornColor(burn);
+    const bot=ease*(window.innerHeight+180);
+    const glow=burn>.1?'drop-shadow(0 0 '+(burn*24)+'px rgba(255,'+Math.round(burn*115)+',0,.9))':'none';
+
+    wrap.style.bottom=bot+'px';
+    wrap.style.opacity=op;
+    wrap.style.transform='scale('+scale+')';
+    wrap.style.filter=glow;
+
+    let emberHTML='';
+    if(dis>.15){
+      for(let i=0;i<10;i++){
+        const a=(i/10)*Math.PI*2+i*.3;const d=(dis-.15)*95;
+        const ex=Math.cos(a)*d+Math.sin(i*2.1)*22;
+        const ey=Math.sin(a)*d-d*.5;
+        const eop=Math.max(0,1-(dis-.15)/.85);
+        const er=2+(i%4);
+        const cols=['#ff6600','#ffaa00','#fff','#ff3300','#ffdd00'];
+        emberHTML+='<div style="position:absolute;left:calc(50% + '+ex+'px);top:calc(50% + '+ey+'px);width:'+er+'px;height:'+er+'px;border-radius:50%;background:'+cols[i%5]+';opacity:'+eop+';box-shadow:0 0 '+(er*3)+'px '+cols[i%5]+';"></div>';
+      }
+    }
+
+    let flameHTML='';
+    if(fh>2){
+      const fo=Math.min(1,p*4);
+      const fc1='rgba('+(180+burn*62)+','+(36+burn*92)+',0,.88)';
+      const fc2='rgba(255,'+(92+burn*122)+',0,.93)';
+      const fc3='rgba(255,'+(172+burn*72)+','+(burn*162)+',.98)';
+      const fc4='rgba(255,255,'+(burn*235)+','+(0.4+burn*.6)+')';
+      flameHTML='<g opacity="'+fo+'"><path d="M20 160 Q15 '+(160-fh*.86)+' 30 '+(160-fh*.66)+' Q26 '+(160-fh*1.06)+' 40 '+(160-fh*.96)+' Q46 '+(160-fh*.76)+' 53 '+(160-fh*.92)+' Q60 '+(160-fh*.76)+' 66 '+(160-fh*.96)+' Q80 '+(160-fh*1.06)+' 76 '+(160-fh*.66)+' Q91 '+(160-fh*.86)+' 86 160Z" fill="'+fc1+'"/><path d="M29 160 Q28 '+(160-fh*.67)+' 40 '+(160-fh*.53)+' Q46 '+(160-fh*.77)+' 53 '+(160-fh*.73)+' Q60 '+(160-fh*.77)+' 66 '+(160-fh*.53)+' Q78 '+(160-fh*.67)+' 77 160Z" fill="'+fc2+'"/><path d="M40 160 Q43 '+(160-fh*.49)+' 53 '+(160-fh*.57)+' Q63 '+(160-fh*.49)+' 66 160Z" fill="'+fc3+'"/><path d="M46 160 Q50 '+(160-fh*.33)+' 53 '+(160-fh*.38)+' Q56 '+(160-fh*.33)+' 60 160Z" fill="'+fc4+'"/></g>';
+    }
+
+    const eyeW=ch>.5?'#fff':'#ff0000';
+    const eyeM=ch>.5?'#ffff00':'#ff6600';
+    const mouthStroke=burn>.4?'#ff5500':'#ff0000';
+    const browStroke=burn>.4?'#ffaa00':'#c0392b';
+    const chestCol=ch>.5?'rgb('+(200+Math.round(burn*56))+','+Math.round(burn*82)+',0)':bc;
+    const innerCol=ch>.45?'#ff3d00':'#4a0000';
+    const armCol=ch>.35?'#ff5500':'#3d0000';
+    const clawStroke=ch>.35?'#ffcc00':'#c0392b';
+    const d1=Math.max(0,1-dis),d12=Math.max(0,1-dis*1.2),d09=Math.max(0,1-dis*.9),d11=Math.max(0,1-dis*1.1);
+    const bodyInner=ch>.5?'rgba(255,'+Math.round((1-ch)*52)+',0,.92)':'#4a0000';
+    const glowR1='rgba(255,'+Math.round(182-burn*105)+',0,'+(burn*.58)+')';
+
+    wrap.innerHTML=emberHTML+'<svg width="106" height="150" viewBox="0 0 106 165" style="overflow:visible;">'+flameHTML+'<ellipse cx="39" cy="154" rx="10" ry="7" fill="'+bc+'" opacity="'+d12+'"/><ellipse cx="67" cy="154" rx="10" ry="7" fill="'+bc+'" opacity="'+d12+'"/><ellipse cx="53" cy="122" rx="28" ry="34" fill="'+bc+'" opacity="'+d1+'"/><ellipse cx="53" cy="119" rx="24" ry="30" fill="'+bodyInner+'" opacity="'+d09+'"/><path d="M74 136 Q93 118 89 100 Q99 114 82 132" fill="'+hc+'" opacity="'+d1+'"/><polygon points="82,132 92,122 87,134" fill="'+hc+'" opacity="'+d1+'"/><path d="M28 112 Q12 97 17 81" stroke="'+bc+'" stroke-width="12" stroke-linecap="round" fill="none" opacity="'+d1+'"/><path d="M78 112 Q94 97 89 81" stroke="'+bc+'" stroke-width="12" stroke-linecap="round" fill="none" opacity="'+d1+'"/><circle cx="16" cy="79" r="9" fill="'+armCol+'" opacity="'+d1+'"/><path d="M10 73 L8 65 M16 71 L16 63 M22 73 L24 65" stroke="'+clawStroke+'" stroke-width="1.8" stroke-linecap="round" opacity="'+d1+'"/><circle cx="90" cy="79" r="9" fill="'+armCol+'" opacity="'+d1+'"/><path d="M84 73 L82 65 M90 71 L90 63 M96 73 L98 65" stroke="'+clawStroke+'" stroke-width="1.8" stroke-linecap="round" opacity="'+d1+'"/><ellipse cx="53" cy="78" rx="26" ry="28" fill="'+chestCol+'" opacity="'+d11+'"/><ellipse cx="53" cy="76" rx="23" ry="25" fill="'+innerCol+'" opacity="'+d12+'"/><path d="M34 62 Q28 40 36 34 Q38 49 42 59" fill="'+hc+'" opacity="'+d1+'"/><path d="M72 62 Q78 40 70 34 Q68 49 64 59" fill="'+hc+'" opacity="'+d1+'"/><ellipse cx="43" cy="74" rx="6.5" ry="6.5" fill="'+eyeW+'" opacity="'+Math.max(0,1-dis*.5)+'"/><ellipse cx="63" cy="74" rx="6.5" ry="6.5" fill="'+eyeW+'" opacity="'+Math.max(0,1-dis*.5)+'"/><ellipse cx="43" cy="74" rx="3.8" ry="3.8" fill="'+eyeM+'" opacity="'+Math.max(0,1-dis*.4)+'"/><ellipse cx="63" cy="74" rx="3.8" ry="3.8" fill="'+eyeM+'" opacity="'+Math.max(0,1-dis*.4)+'"/><ellipse cx="43" cy="74" rx="1.6" ry="1.6" fill="#fff" opacity="'+d1+'"/><ellipse cx="63" cy="74" rx="1.6" ry="1.6" fill="#fff" opacity="'+d1+'"/>'+(burn>.15?'<ellipse cx="43" cy="74" rx="'+(8+burn*8)+'" ry="'+(8+burn*8)+'" fill="none" stroke="'+glowR1+'" stroke-width="2" opacity="'+d1+'"/><ellipse cx="63" cy="74" rx="'+(8+burn*8)+'" ry="'+(8+burn*8)+'" fill="none" stroke="'+glowR1+'" stroke-width="2" opacity="'+d1+'"/>' :'' )+'<path d="M37 88 Q53 101 69 88" fill="#1a0000" stroke="'+mouthStroke+'" stroke-width="1" opacity="'+d1+'"/><path d="M39 88 Q53 98 67 88" fill="#000" opacity="'+d1+'"/><path d="M42 88 L44 96 L46 88" fill="#fff" opacity="'+Math.max(0,.9*d1)+'"/><path d="M51 88 L53 97 L55 88" fill="#fff" opacity="'+Math.max(0,.9*d1)+'"/><path d="M60 88 L62 96 L64 88" fill="#fff" opacity="'+Math.max(0,.9*d1)+'"/><path d="M38 66 L48 70" stroke="'+browStroke+'" stroke-width="3" stroke-linecap="round" opacity="'+d1+'"/><path d="M58 70 L68 66" stroke="'+browStroke+'" stroke-width="3" stroke-linecap="round" opacity="'+d1+'"/></svg>';
+  }
+
+  container.appendChild(wrap);
+  function tick(){
+    const elapsed=Date.now()-startTime;
+    progress=Math.min(elapsed/DURATION,1);
+    buildSVG(progress);
+    if(progress<1)requestAnimationFrame(tick);
+    else wrap.remove();
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ══ HERO ACTIONS ══ */
+function confessNow(){
+  spawnDevil(window.innerWidth/2);
+  setTimeout(()=>document.getElementById('cbox').scrollIntoView({behavior:'smooth'}),120);
+}
+function readConf(){
+  spawnDevil(window.innerWidth*.62);
+  showTab('feed');
+}
+
+/* ══ CHAR COUNT ══ */
+function updateCharCount(){
+  const v=document.getElementById('conf-input').value;
+  document.getElementById('char-count').textContent=v.length+' CHARS · ANONYMOUS · ENCRYPTED';
+  const btn=document.getElementById('confess-btn');
+  btn.disabled=v.length<20;
+  btn.style.background=v.length>=20?'var(--red)':'var(--surface2)';
+  btn.style.color=v.length>=20?'#fff':'var(--text3)';
+  btn.style.animation=v.length>=20?'glow 3s ease infinite':'none';
+}
+
+/* ══ AI CONFESSION — via Netlify Function (avoids CORS) ══ */
+async function submitConfession(){
+  const confession=document.getElementById('conf-input').value.trim();
+  if(!confession||confession.length<20)return;
+  const area=document.getElementById('result-area');
+  area.innerHTML='<div class="loading-box"><div class="spinner">😈</div><div class="loading-text">THE DEVIL IS REVIEWING YOUR CASE...</div></div>';
+  try{
+    // Calls our Netlify serverless function — no API key exposed in frontend
+    const res=await fetch('/.netlify/functions/judge',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({confession})
+    });
+    if(!res.ok)throw new Error('API error '+res.status);
+    const r=await res.json();
+    renderResult(r,confession);
+  }catch(e){
+    console.error(e);
+    area.innerHTML='<div class="result-card"><div class="result-body"><p class="verdict-quote">"Even our AI is too shocked to respond. Your sin is unprecedented. That actually makes it worse."</p></div></div>';
+  }
+}
+
+/* ══ RENDER RESULT ══ */
+function renderResult(r,confession){
+  const col=scoreCol(r.sinScore);
+  _pendingConfession={confession,result:r};
+  _notSorryCount=0;
+  // donationAmount is already KES — no conversion needed
+  const ksh=Math.round(r.donationAmount);
+  window._currentKsh=ksh;
+  window._pendingResult=r;
+  window._pendingConf=confession;
+
+  const area=document.getElementById('result-area');
+  area.innerHTML=
+    '<div class="result-card" id="result-main">'
+    +'<div class="result-header">'
+    +'<div>'
+    +'<div class="result-meta">OFFICIAL SIN ASSESSMENT</div>'
+    +'<div class="result-category">'+(r.category||'Unknown')+'</div>'
+    +(r.sinType?'<div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text3);margin-top:8px;">"'+r.sinType+'"</div>':'')
+    +'</div>'
+    +'<div>'
+    +'<div class="result-score-label">SIN SCORE</div>'
+    +'<div class="result-score" id="sin-score-val" style="color:'+col+';">'+r.sinScore+'</div>'
+    +'<div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-align:right;">/100</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="score-bar-track"><div class="score-bar-fill" id="score-bar" style="width:0%;"></div></div>'
+    +'<div class="result-body">'
+    +'<blockquote class="verdict-quote" id="verdict-text">"'+r.verdict+'"</blockquote>'
+    +'<div class="judgment-box">'
+    +'<div class="judgment-label">JUDGMENT</div>'
+    +'<div class="judgment-text" id="absolution-text">'+r.absolution+'</div>'
+    +'</div>'
+    +'<div id="choice-step">'
+    +'<p style="font-family:var(--mono);font-size:8px;letter-spacing:5px;color:var(--text3);margin-bottom:14px;text-align:center;">NOW FACE YOUR CONSCIENCE</p>'
+    +'<div class="verdict-choice">'
+    +'<button class="btn-sorry" onclick="chooseRedemption()">😇 I FEEL TERRIBLE<br/><span style="font-size:8px;letter-spacing:2px;opacity:.7;font-weight:400;">take me to the light</span></button>'
+    +'<button class="btn-condemned" onclick="chooseCondemnation()">😈 DO I LOOK SORRY?<br/><span style="font-size:8px;letter-spacing:2px;opacity:.7;font-weight:400;">embrace the darkness</span></button>'
+    +'</div>'
+    +'</div>'
+    +'<div id="outcome-step" style="display:none;"></div>'
+    +'</div>'
+    +'</div>';
+
+  setTimeout(()=>{
+    const bar=document.getElementById('score-bar');
+    if(bar)bar.style.width=r.sinScore+'%';
+  },100);
+}
+
+/* ══ REDEMPTION PATH ══ */
+function chooseRedemption(){
+  try{
+    const choiceEl=document.getElementById('choice-step');
+    if(choiceEl)choiceEl.style.display='none';
+    const step=document.getElementById('outcome-step');
+    if(!step)return;
+    const ksh=window._currentKsh||0;
+    step.style.display='block';
+    step.innerHTML=
+      '<div class="outcome-box" style="background:rgba(39,174,96,.04);border-top:1px solid rgba(39,174,96,.2);">'
+      +'<span class="outcome-icon">✨</span>'
+      +'<div class="outcome-title" style="color:#2ecc71;">You Have Been Redeemed</div>'
+      +'<p class="outcome-sub">&ldquo;The gates creak open. Barely. Don&#39;t push it.&rdquo;<br/>Now seal your redemption with an act of good.</p>'
+      +'</div>'
+      +'<div class="donation-panel">'
+      +'<div class="donation-label">YOUR GUILT BILL — AI RECOMMENDED</div>'
+      +'<div class="donation-ksh" id="donate-ksh">KSh '+ksh.toLocaleString()+'</div>'
+      +'<div class="donation-options">'
+      +'<div class="donation-own-row">'
+      +'<input class="donation-own-input" id="custom-amount" type="number" min="1" placeholder="Custom amount in KSh" oninput="updateCustomPreview()"/>'
+      +'</div>'
+      +'<div class="donation-phone-row">'
+      +'<input class="phone-input" id="mpesa-phone" type="tel" placeholder="M-Pesa number e.g. 0712345678"/>'
+      +'<button class="btn-donate-own" onclick="donateAndPost(&apos;redeemed&apos;)">ATONE NOW 📱</button>'
+      +'</div>'
+      +'<div id="mpesa-msg"></div>'
+      +'<button class="btn-post-free" onclick="postFreeConfession(&apos;redeemed&apos;)">🤔 I&#39;LL THINK ABOUT IT &mdash; POST FOR FREE</button>'
+      +'</div>'
+      +'</div>';
+  }catch(err){console.error('chooseRedemption error:',err);}
+}
+
+/* ══ CONDEMNATION PATH ══ */
+function chooseCondemnation(){
+  try{
+    const scoreEl=document.getElementById('sin-score-val');
+    const current=parseInt((scoreEl&&scoreEl.textContent)||'50');
+    const newScore=Math.min(current+15,100);
+    if(scoreEl){
+      scoreEl.textContent=newScore;
+      scoreEl.style.color=scoreCol(newScore);
+      scoreEl.style.animation='none';
+      void scoreEl.offsetWidth;
+      scoreEl.style.animation='scoreJolt .5s ease';
+      setTimeout(function(){if(scoreEl)scoreEl.style.animation='';},520);
+    }
+    const bar=document.getElementById('score-bar');
+    if(bar)bar.style.width=newScore+'%';
+    const penaltyKsh=Math.min(1000,Math.round((window._currentKsh||200)*1.4));
+    window._currentKsh=penaltyKsh;
+    const card=document.getElementById('result-main');
+    if(card){
+      card.style.animation='none';
+      void card.offsetWidth;
+      card.style.animation='shake .5s ease, redFlash .5s ease';
+      setTimeout(function(){if(card)card.style.animation='';},560);
+    }
+    const choiceEl=document.getElementById('choice-step');
+    if(choiceEl)choiceEl.style.display='none';
+    spawnDevil(window.innerWidth/2+(Math.random()-.5)*200);
+    const step=document.getElementById('outcome-step');
+    if(!step)return;
+    step.style.display='block';
+    step.innerHTML=
+      '<div class="outcome-box" style="background:rgba(192,57,43,.06);border-top:1px solid rgba(192,57,43,.25);">'
+      +'<span class="outcome-icon">🔥</span>'
+      +'<div class="outcome-title" style="color:var(--red);">You Have Been Condemned</div>'
+      +'<p class="outcome-sub">&ldquo;Defiance noted. Your file has been upgraded to Priority Sinner status. The bill has been adjusted accordingly.&rdquo;</p>'
+      +'</div>'
+      +'<div class="donation-panel">'
+      +'<div class="donation-label">PENALTY BILL — ADJUSTED FOR INSOLENCE</div>'
+      +'<div class="donation-ksh" id="donate-ksh" style="color:#e74c3c;">KSh '+penaltyKsh.toLocaleString()+'</div>'
+      +'<div class="donation-usd" id="donate-usd">+40% DEFIANCE TAX</div>'
+      +'<div class="donation-options">'
+      +'<div class="donation-own-row">'
+      +'<input class="donation-own-input" id="custom-amount" type="number" min="1" placeholder="Custom amount in KSh" oninput="updateCustomPreview()"/>'
+      +'</div>'
+      +'<div class="donation-phone-row">'
+      +'<input class="phone-input" id="mpesa-phone" type="tel" placeholder="M-Pesa number e.g. 0712345678"/>'
+      +'<button class="btn-donate-own" onclick="donateAndPost(&apos;condemned&apos;)">PAY THE PRICE 📱</button>'
+      +'</div>'
+      +'<div id="mpesa-msg"></div>'
+      +'<button class="btn-post-free" onclick="postFreeConfession(&apos;condemned&apos;)">🤔 I&#39;LL THINK ABOUT IT &mdash; POST FOR FREE</button>'
+      +'</div>'
+      +'</div>';
+  }catch(err){console.error('chooseCondemnation error:',err);}
+}
+
+/* ══ UPDATE CUSTOM PREVIEW ══ */
+function updateCustomPreview(){
+  const val=parseInt(document.getElementById('custom-amount')?.value)||0;
+  const kshEl=document.getElementById('donate-ksh');
+  const usdEl=document.getElementById('donate-usd');
+  if(val>0){
+    if(kshEl)kshEl.textContent='KSh '+val.toLocaleString();
+    if(usdEl)usdEl.textContent='≈ $'+Math.round(val/130)+' USD';
+  }else{
+    if(kshEl)kshEl.textContent='KSh '+(window._currentKsh||0).toLocaleString();
+  }
+}
+
+/* ══ DONATE AND POST — PayHero M-Pesa STK Push ══ */
+async function donateAndPost(verdict){
+  const custom=parseInt(document.getElementById('custom-amount')?.value)||0;
+  const finalKsh=custom>0?custom:window._currentKsh;
+  let phone=(document.getElementById('mpesa-phone')?.value||'').trim();
+  const msgEl=document.getElementById('mpesa-msg');
+
+  if(!phone){
+    if(msgEl){msgEl.className='mpesa-status mpesa-error';msgEl.textContent='⚠️ ENTER YOUR M-PESA NUMBER TO PROCEED';}
+    return;
+  }
+
+  // Normalise phone: 07... → 2547...
+  phone=phone.replace(/\s/g,'');
+  if(phone.startsWith('0'))phone='254'+phone.slice(1);
+  if(phone.startsWith('+'))phone=phone.slice(1);
+
+  if(msgEl){msgEl.className='mpesa-status';msgEl.textContent='📱 SENDING STK PUSH TO '+phone+' ...';}
+
+  try{
+    // Calls our Netlify function which proxies to PayHero (solves CORS)
+    const res=await fetch('/.netlify/functions/mpesa',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({amount:finalKsh,phone,reference:'SINTAX-'+Date.now()})
+    });
+    const data=await res.json();
+    if(res.ok && data.success){
+      if(msgEl){msgEl.className='mpesa-status';msgEl.textContent='✅ CHECK YOUR PHONE — ENTER M-PESA PIN TO COMPLETE';}
+      _postToFeed(verdict, finalKsh);
+      setTimeout(()=>{
+        document.getElementById('result-area').innerHTML='';
+        showTab('feed');
+        window.scrollTo({top:0,behavior:'smooth'});
+      },3500);
+    }else{
+      if(msgEl){msgEl.className='mpesa-status mpesa-error';msgEl.textContent='❌ '+(data.error||'PAYMENT FAILED — TRY AGAIN');}
+    }
+  }catch(e){
+    console.error(e);
+    if(msgEl){msgEl.className='mpesa-status mpesa-error';msgEl.textContent='❌ NETWORK ERROR — CHECK CONNECTION AND RETRY';}
+  }
+}
+
+/* ══ POST FREE ══ */
+function postFreeConfession(verdict){
+  _postToFeed(verdict,0);
+  const area=document.getElementById('result-area');
+  area.innerHTML='<div class="loading-box"><div style="font-size:28px;margin-bottom:10px;">🤔</div><div class="loading-text">POSTED FOR FREE · YOUR GUILT REMAINS UNPAID</div></div>';
+  setTimeout(()=>{area.innerHTML='';showTab('feed');window.scrollTo({top:0,behavior:'smooth'});},1400);
+}
+
+/* ══ SUPABASE CONFIG ══ */
+const SUPABASE_URL = 'REPLACE_WITH_YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY';
+
+/* ══ FEED STATE ══ */
+let _feedCategory = 'All';
+let _feedCreatorRef = null;
+let _creatorRefCode = null;
+
+/* ══ READ URL PARAMS ON LOAD ══ */
+function initCreatorRef(){
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get('ref');
+  if(ref){
+    _feedCreatorRef = ref;
+    const banner = document.getElementById('creator-filter-banner');
+    const nameEl = document.getElementById('creator-filter-name');
+    if(banner){ banner.style.display='block'; }
+    if(nameEl){ nameEl.textContent = '@'+ref.split('-').slice(0,-1).join('') || ref; }
+    window._activeCreatorRef = ref;
+  }
+}
+
+function clearCreatorFilter(){
+  _feedCreatorRef = null;
+  window._activeCreatorRef = null;
+  const banner = document.getElementById('creator-filter-banner');
+  if(banner) banner.style.display='none';
+  window.history.replaceState({},'',window.location.pathname);
+  loadFeed();
+}
+
+/* ══ CATEGORY FILTER ══ */
+function setFeedFilter(cat){
+  _feedCategory = cat;
+  document.querySelectorAll('.cat-filter-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('cat-'+cat);
+  if(btn) btn.classList.add('active');
+  loadFeed();
+}
+
+/* ══ LOAD FEED FROM SUPABASE ══ */
+async function loadFeed(){
+  const list = document.getElementById('feed-list');
+  if(!list) return;
+  list.innerHTML='<div style="padding:40px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--text3);">LOADING...</div>';
+  try{
+    let url = '/.netlify/functions/get-confessions?limit=50';
+    if(_feedCategory && _feedCategory !== 'All') url += '&category='+encodeURIComponent(_feedCategory);
+    if(_feedCreatorRef) url += '&creator_ref='+encodeURIComponent(_feedCreatorRef);
+    const res = await fetch(url);
+    const data = await res.json();
+    const confessions = data.confessions || [];
+    if(confessions.length === 0){
+      list.innerHTML='<div style="padding:60px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--text3);">NO CONFESSIONS YET IN THIS CATEGORY.<br><br>BE THE FIRST TO CONFESS.</div>';
+      return;
+    }
+    renderFeedItems(confessions);
+  }catch(e){
+    console.error('loadFeed error:',e);
+    // Fallback to local sample data
+    renderFeedItems(FEED_DATA);
+  }
+}
+
+/* ══ INTERNAL: PUSH TO FEED (saves to Supabase) ══ */
+async function _postToFeed(verdict, amountKsh){
+  const conf=window._pendingConf;
+  const r=window._pendingResult;
+  if(!conf||!r)return;
+  window._pendingConf=null;window._pendingResult=null;_pendingConfession=null;
+  document.getElementById('conf-input').value='';
+  updateCharCount();
+  // Save to Supabase
+  try{
+    await fetch('/.netlify/functions/post-confession',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        text: conf,
+        category: r.category||'Chaos',
+        sin_type: r.sinType||null,
+        sin_score: r.sinScore||50,
+        verdict: verdict,
+        amount_ksh: amountKsh||0,
+        creator_ref: window._activeCreatorRef||null,
+      }),
+    });
+  }catch(e){ console.error('post-confession error:',e); }
+  // Reload feed to show new confession
+  showTab('feed');
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>loadFeed(), 600);
+}
+
+function payAndPost(){}
+function notSorry(){}
+
+/* ══ CREATOR LINK GENERATOR ══ */
+async function generateCreatorLink(){
+  const handle = (document.getElementById('creator-handle-input')?.value||'').trim();
+  const errEl = document.getElementById('creator-link-error');
+  const resultEl = document.getElementById('creator-link-result');
+  if(!handle || handle.length<2){
+    if(errEl){errEl.style.display='block';errEl.textContent='ENTER A VALID NAME OR HANDLE';}
+    return;
+  }
+  if(errEl) errEl.style.display='none';
+  try{
+    const res = await fetch('/.netlify/functions/create-creator',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({handle}),
+    });
+    const data = await res.json();
+    if(!data.success) throw new Error(data.error||'Failed');
+    _creatorRefCode = data.ref_code;
+    const link = window.location.origin+'?ref='+data.ref_code;
+    const linkEl = document.getElementById('creator-link-url');
+    const refDisplay = document.getElementById('creator-ref-display');
+    if(linkEl) linkEl.textContent = link;
+    if(refDisplay) refDisplay.textContent = data.ref_code;
+    if(resultEl) resultEl.style.display='block';
+    if(data.existing){
+      if(errEl){errEl.style.display='block';errEl.textContent='WELCOME BACK — YOUR EXISTING LINK HAS BEEN RESTORED';}
+    }
+  }catch(e){
+    if(errEl){errEl.style.display='block';errEl.textContent='ERROR GENERATING LINK. TRY AGAIN.';}
+  }
+}
+
+function copyCreatorLink(){
+  const linkEl = document.getElementById('creator-link-url');
+  const btn = document.getElementById('copy-link-btn');
+  if(!linkEl) return;
+  navigator.clipboard.writeText(linkEl.textContent).then(()=>{
+    if(btn){btn.textContent='COPIED!';setTimeout(()=>btn.textContent='COPY',2000);}
+  });
+}
+
+function viewMyFeed(){
+  if(!_creatorRefCode) return;
+  _feedCreatorRef = _creatorRefCode;
+  const banner = document.getElementById('creator-filter-banner');
+  const nameEl = document.getElementById('creator-filter-name');
+  if(banner) banner.style.display='block';
+  if(nameEl) nameEl.textContent = document.getElementById('creator-handle-input')?.value||_creatorRefCode;
+  showTab('feed');
+  loadFeed();
+}
+
+/* ══ FEED RENDER ══ */
+function renderFeed(){ loadFeed(); }
+
+function renderFeedItems(items){
+  const list=document.getElementById('feed-list');
+  if(!list)return;
+  list.innerHTML=items.map(item=>
+    '<div class="feed-item">'
+    +'<div class="feed-item-body">'
+    +'<div class="feed-top">'
+    +'<div class="feed-tags">'
+    +'<span class="tag">'+item.category+'</span>'
+    +((item.sin_type||item.sinType)?'<span class="feed-time" style="color:var(--red);opacity:.75;">'+(item.sin_type||item.sinType)+'</span>':'')
+    +'<span class="feed-time">'+(item.created_at?new Date(item.created_at).toLocaleString('en-KE',{dateStyle:'short',timeStyle:'short'}):item.time||'just now')+'</span>'
+    +'</div>'
+    +'<span class="feed-score" style="color:'+scoreCol(item.sin_score||item.score||50)+'">'+(item.sin_score||item.score||'?')+'</span>'
+    +'</div>'
+    +'<p class="feed-text">"'+item.text+'"</p>'
+    +'<div class="feed-actions">'
+    +'<div class="action-btns">'
+    +'<button class="action-btn" onclick="voteUp('+item.id+',this)">😇 <span id="votes-'+item.id+'">'+item.votes.toLocaleString()+'</span></button>'
+    +'<button class="action-btn">💀 CONDEMN</button>'
+    +'<button class="action-btn" id="cmt-btn-'+item.id+'" onclick="toggleComments('+item.id+')">💬 <span id="cmt-count-'+item.id+'">0</span></button>'
+    +'</div>'
+    +'<span class="paid-label">'+(item.amount_ksh>0?'KSh '+Number(item.amount_ksh).toLocaleString():item.amount>0?'KSh '+Number(item.amount).toLocaleString():'posted free')+(item.verdict?' · <span style="color:'+(item.verdict==='redeemed'?'#2ecc71':'var(--red)')+';;font-size:8px;">'+(item.verdict==='redeemed'?'✨ REDEEMED':'🔥 CONDEMNED')+'</span>':'')+'</span>'
+    +'</div>'
+    +'</div>'
+    +'<div class="comments-panel" id="cmt-panel-'+item.id+'">'
+    +'<div class="comment-list" id="cmt-list-'+item.id+'"></div>'
+    +'<div class="comment-input-row">'
+    +'<textarea class="comment-textarea" id="cmt-input-'+item.id+'" placeholder="Leave your judgment anonymously..." rows="2"></textarea>'
+    +'<button class="btn-post" onclick="postComment('+item.id+')">POST</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+  ).join('');
+}
+
+function voteUp(id){
+  votes[id]=(votes[id]||0)+1;
+  const el=document.getElementById('votes-'+id);
+  const base=FEED_DATA.find(f=>f.id===id)?.votes||0;
+  if(el)el.textContent=(base+votes[id]).toLocaleString();
+}
+
+function toggleComments(id){
+  const panel=document.getElementById('cmt-panel-'+id);
+  const btn=document.getElementById('cmt-btn-'+id);
+  if(!panel)return;
+  const isOpen=panel.classList.contains('open');
+  panel.classList.toggle('open',!isOpen);
+  if(btn)btn.classList.toggle('active',!isOpen);
+}
+
+function postComment(id){
+  const input=document.getElementById('cmt-input-'+id);
+  const val=input?input.value.trim():'';
+  if(!val)return;
+  if(!comments[id])comments[id]=[];
+  comments[id].push(val);
+  input.value='';
+  renderComments(id);
+  const count=document.getElementById('cmt-count-'+id);
+  if(count)count.textContent=comments[id].length;
+}
+
+function renderComments(id){
+  const list=document.getElementById('cmt-list-'+id);
+  if(!list)return;
+  list.innerHTML=(comments[id]||[]).map(c=>
+    '<div class="comment-row">'
+    +'<div class="comment-avatar">😇</div>'
+    +'<div>'
+    +'<div class="comment-meta">ANONYMOUS SINNER · just now</div>'
+    +'<div class="comment-text">'+c+'</div>'
+    +'</div>'
+    +'</div>'
+  ).join('');
+}
+
+/* ══ LEADERBOARD ══ */
+function renderBoard(){
+  const list=document.getElementById('board-list');
+  if(!list)return;
+  list.innerHTML=BOARD_DATA.map((c,i)=>
+    '<div class="board-row">'
+    +'<div class="board-country">'
+    +'<span class="board-rank '+(i===0?'top':'')+'">'+('#'+(i+1))+'</span>'
+    +'<span class="board-flag">'+c.flag+'</span>'
+    +'<span class="board-name">'+c.name+'</span>'
+    +'</div>'
+    +'<span class="board-sins">'+c.sins.toLocaleString()+'</span>'
+    +'<span class="board-amt">$'+c.amt.toLocaleString()+'</span>'
+    +'</div>'
+  ).join('');
+
+  const grid=document.getElementById('cats-grid');
+  if(!grid)return;
+  grid.innerHTML=CATS_DATA.map(c=>
+    '<div class="cat-card">'
+    +'<div class="cat-emoji">'+c.e+'</div>'
+    +'<div class="cat-name">'+c.cat+'</div>'
+    +'<div class="cat-bar-track"><div class="cat-bar-fill" style="width:'+(c.pct*3.2)+'%;"></div></div>'
+    +'<div class="cat-pct">'+c.pct+'%</div>'
+    +'</div>'
+  ).join('');
+}
+
+/* ══ FORMS ══ */
+function renderCharityForm(){
+  const area=document.getElementById('charity-form-area');
+  if(!area)return;
+  if(charitySubmitted){
+    area.innerHTML='<div class="success-box"><div class="success-icon">🤝</div><h3 class="success-title">Application Received</h3><p class="success-body">Thank you for the work you do. We review monthly and will reach out within 30 days.</p><button class="btn-ghost" onclick="charitySubmitted=false;renderCharityForm()">SUBMIT ANOTHER</button></div>';
+    return;
+  }
+  area.innerHTML=
+    '<div class="form-box">'
+    +'<div class="form-header"><span class="form-header-label">APPLICATION FORM</span></div>'
+    +'<div class="form-body">'
+    +fField('org','ORGANISATION NAME',false,"Your organisation's name")
+    +fField('country','COUNTRY OF OPERATION',false,'e.g. Kenya, Nigeria, United Kingdom')
+    +fField('mission','YOUR MISSION',true,'What does your organisation do? Who do you serve?')
+    +fField('why','WHY DO YOU NEED FUNDING?',true,'Tell us specifically what the funds would be used for...')
+    +fField('amount','AMOUNT REQUESTED (USD)',false,'e.g. 2000',true)
+    +fField('contact','CONTACT EMAIL',false,'your@email.com',true)
+    +'<div class="form-submit-row"><span class="form-note">ALL APPLICATIONS REVIEWED WITHIN 30 DAYS</span><button class="btn-primary" style="animation:none;" onclick="submitCharity()">SUBMIT APPLICATION</button></div>'
+    +'</div></div>';
+}
+
+function renderCreatorForm(){
+  const area=document.getElementById('creator-form-area');
+  if(!area)return;
+  if(creatorSubmitted){
+    area.innerHTML='<div class="success-box"><div class="success-icon">🎉</div><h3 class="success-title">Application Received</h3><p class="success-body">We review creator applications within 7 days. Get ready to turn guilt into income.</p><button class="btn-ghost" onclick="creatorSubmitted=false;renderCreatorForm()">BACK TO CREATORS</button></div>';
+    return;
+  }
+  area.innerHTML=
+    '<div class="form-box">'
+    +'<div class="form-header"><span class="form-header-label">APPLY TO JOIN</span></div>'
+    +'<div class="form-body">'
+    +fField('cr-name','YOUR NAME OR HANDLE',false,'@yourhandle or Your Name')
+    +fField('cr-platform','MAIN PLATFORM',false,'TikTok, Instagram, YouTube, Podcast...')
+    +fField('cr-link','PROFILE / CHANNEL LINK',false,'https://...')
+    +fField('cr-audience','APPROXIMATE AUDIENCE SIZE',false,'e.g. 25,000 followers')
+    +fField('cr-plan','HOW WILL YOU CREATE FOR SINTAX?',true,'Tell us your content idea...')
+    +fField('cr-email','EMAIL ADDRESS',false,'your@email.com')
+    +'<div class="form-submit-row"><span class="form-note">REVIEWED IN 7 DAYS · NO EXCLUSIVITY REQUIRED</span><button class="btn-primary" style="animation:none;" onclick="submitCreator()">APPLY NOW</button></div>'
+    +'</div></div>';
+}
+
+function fField(id,label,isTextarea,ph,optional=false){
+  const req=optional?'':' <span class="field-req">*</span>';
+  const elId='cf-'+id;
+  if(isTextarea)return'<div class="form-field"><div class="field-label">'+label+req+'</div><textarea class="field-textarea" id="'+elId+'" placeholder="'+ph+'"></textarea></div>';
+  return'<div class="form-field"><div class="field-label">'+label+req+'</div><input class="field-input" id="'+elId+'" placeholder="'+ph+'"/></div>';
+}
+
+function submitCharity(){
+  const req=['org','country','mission','why','contact'];
+  for(const k of req){
+    const el=document.getElementById('cf-'+k);
+    if(!el||!el.value.trim()){if(el)el.style.borderColor='var(--red)';return;}
+    el.style.borderColor='';
+  }
+  charitySubmitted=true;renderCharityForm();
+}
+
+function submitCreator(){
+  const req=['cr-name','cr-platform','cr-link','cr-audience','cr-plan','cr-email'];
+  for(const k of req){
+    const el=document.getElementById('cf-'+k);
+    if(!el||!el.value.trim()){if(el)el.style.borderColor='var(--red)';return;}
+    el.style.borderColor='';
+  }
+  creatorSubmitted=true;renderCreatorForm();
+}
+
+/* ══ INIT ══ */
+initCreatorRef();
+loadFeed();
+renderBoard();
+renderCharityForm();
+renderCreatorForm();
+</script>
+</body>
+</html>
